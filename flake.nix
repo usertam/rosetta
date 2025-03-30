@@ -1,37 +1,31 @@
 {
-  description = "RosettaLinux packaging for use on Linux";
+  description = "Packaging of patched RosettaLinux";
 
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    systems.url = "github:usertam/nix-systems";
-  };
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
-  # RosettaUpdateAuto.pkg found at AppleDB by littlebyteorg:
-  # https://github.com/littlebyteorg/appledb/blob/main/osFiles/Software/Rosetta/24x%20-%2015.x/24C101.json
-
-  # Hack found at CathyKMeow/rosetta-linux-asahi, updated by rawenger:
-  # https://github.com/CathyKMeow/rosetta-linux-asahi
-  # https://github.com/rawenger/rosetta-linux-asahi
-
-  outputs = { self, nixpkgs, systems }: let
-    forAllSystems = with nixpkgs.lib; genAttrs systems.systems;
+  outputs = { self, nixpkgs }: let
+    forAllSystems = with nixpkgs.lib; genAttrs platforms.all;
     forAllPkgs = pkgsWith: forAllSystems (system: pkgsWith nixpkgs.legacyPackages.${system});
   in {
     packages = forAllPkgs (pkgs: rec {
       default = pkgs.stdenvNoCC.mkDerivation {
         pname = "rosetta";
-        version = "14.7-23H124";
+        version = "15.3.2-24D81";
         nativeBuildInputs = [ pkgs.p7zip ];
         src = pkgs.fetchurl {
-          url = "https://swcdn.apple.com/content/downloads/23/52/062-78837-A_F5Z09RRWFT/2hl1q0336rcw825lejz4e9uwayu11kir87/RosettaUpdateAuto.pkg";
-          hash = "sha256-RGzYPOaOm1vDXtxYvVLeqoUHKxho/MmLdmG6m7FhaRE=";
+          url = "https://swcdn.apple.com/content/downloads/09/56/082-01503-A_0D9JVZVOF9/rzynizibmxzrlpumnvy3u27xzn9dapfu5m/RosettaUpdateAuto.pkg";
+          hash = "sha256-PupVve9xep9Hy2peElrc32vzy6mZCmpVa9CHerK6aQ8=";
         };
-        buildCommand = ''
+        unpackPhase = ''
           7z x $src
           7z x Payload~
+        '';
+        installPhase = ''
           install -Dm755 -t $out/bin Library/Apple/usr/libexec/oah/RosettaLinux/*
-          dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=180376 conv=notrunc
-          dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=180404 conv=notrunc
+        '';
+        fixupPhase = ''
+          dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=190960 conv=notrunc
+          dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=190988 conv=notrunc
         '';
       };
     });
