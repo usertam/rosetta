@@ -26,6 +26,7 @@
         fixupPhase = ''
           dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=190960 conv=notrunc
           dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=190988 conv=notrunc
+          dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=195472 conv=notrunc
         '';
       };
     });

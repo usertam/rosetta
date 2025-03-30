@@ -45,3 +45,34 @@ We get `0x2e9f0 = 190960` and `0x2ea0c = 190988`. Just replace each 4 bytes at t
 dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=190960 conv=notrunc
 dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=190988 conv=notrunc
 ```
+
+Recent versions of `rosetta` will yield this additional error:
+```
+rosetta error: Unexpected ioctl error when communicating with hypervisor: 25
+ zsh: trace trap (core dumped)  hello
+```
+
+Like above, we can patch it out of existence:
+```sh
+[0x800000025030]> aaaaaa
+[0x800000025030]> s sub.fcn.80000002e984_80000002e984
+[0x80000002e984]> pdr
+Do you want to print 373 lines? (y/N) y
+  ; CALL XREF from sub.entry0_800000025030 @ 0x80000002506c(x)
+┌ 1212: sub.fcn.80000002e984_80000002e984 (int64_t arg1, int64_t arg2, int64_t arg3, int64_t arg4);
+│ `- args(x0, x1, x2, x3) vars(12:sp[0x8..0x60])
+│           0x80000002e984      fd7bbaa9       stp x29, x30, [sp, -0x60]!
+│           ...
+│           ; CODE XREF from sub.fcn.80000002e984_80000002e984 @ +0x120c(x)
+│           0x80000003003c      e80300aa       mov x8, x0
+│           0x800000030040      c0fefff0       adrp x0, 0x80000000b000
+│           0x800000030044      00041291       add x0, x0, 0x481                 ; 0x80000000b481 ; "Unexpected ioctl error when communicating with hypervisor: %lu\n" ; int64_t arg1
+│           0x800000030048      e10308aa       mov x1, x8                        ; int64_t arg2
+│           0x80000003004c      18500194       bl sub.fcn.8000000840ac_8000000840ac
+└           ...
+```
+
+We again convert the CODE XREF to decimal, which is `0x2e984 + 0x120c = 195472`, and patch it with `nop`.
+```sh
+dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=195472 conv=notrunc
+```
