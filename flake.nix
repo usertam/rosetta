@@ -7,15 +7,15 @@
     forAllSystems = with nixpkgs.lib; genAttrs platforms.all;
     forAllPkgs = pkgsWith: forAllSystems (system: pkgsWith nixpkgs.legacyPackages.${system});
   in {
-    packages = forAllPkgs (pkgs: rec {
-      default = pkgs.stdenvNoCC.mkDerivation {
+    packages = forAllPkgs (pkgs: with pkgs; {
+      default = stdenvNoCC.mkDerivation {
         pname = "rosetta";
-        version = "15.3.2-24D81";
-        nativeBuildInputs = [ pkgs.p7zip ];
-        src = pkgs.fetchurl {
-          url = "https://swcdn.apple.com/content/downloads/09/56/082-01503-A_0D9JVZVOF9/rzynizibmxzrlpumnvy3u27xzn9dapfu5m/RosettaUpdateAuto.pkg";
-          hash = "sha256-PupVve9xep9Hy2peElrc32vzy6mZCmpVa9CHerK6aQ8=";
+        version = "15.4-beta-4-24E5238a";
+        src = fetchurl {
+          url = "https://swcdn.apple.com/content/downloads/54/11/082-08305-A_VN60L27NBN/f2f9wkhllglu1zhe6y47n0wsjemdi46b8g/RosettaUpdateAuto.pkg";
+          hash = "sha256-oMeLOFtH/AMjHKClvwgfce78vVrsMA5eyaWIUFIbf0g=";
         };
+        nativeBuildInputs = [ p7zip ];
         unpackPhase = ''
           7z x $src
           7z x Payload~
@@ -24,10 +24,15 @@
           install -Dm755 -t $out/bin Library/Apple/usr/libexec/oah/RosettaLinux/*
         '';
         fixupPhase = ''
-          dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=190960 conv=notrunc
-          dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=190988 conv=notrunc
-          dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=195472 conv=notrunc
+          dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=196748 conv=notrunc
+          dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=196776 conv=notrunc
+          dd if=<(printf '\x1f\x20\x03\xd5') of=$out/bin/rosetta bs=1 seek=201340 conv=notrunc
         '';
+        meta = with lib; {
+          description = "A dynamic binary translator to run x86_64 binaries under ARM Linux";
+          homepage = "https://developer.apple.com/documentation/virtualization/running-intel-binaries-in-linux-vms-with-rosetta";
+          platforms = platforms.all;
+        };
       };
     });
   };

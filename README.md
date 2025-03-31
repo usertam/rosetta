@@ -1,11 +1,11 @@
 # Patched RosettaLinux
 
-This is a patched version of RosettaLinux from macOS 15.3.2 (24D81).
+This is a patched version of RosettaLinux from macOS 15.4 beta 4 (24E5238a).
 
 Updates of `RosettaUpdateAuto.pkg` can found at AppleDB by littlebyteorg:  
-https://github.com/littlebyteorg/appledb/blob/main/osFiles/Software/Rosetta/24x%20-%2015.x/24D81.json
+https://github.com/littlebyteorg/appledb/blob/main/osFiles/Software/Rosetta/24x%20-%2015.x/24E5238a.json
 
-Hack from https://github.com/CathyKMeow/rosetta-linux-asahi.
+Original patch from https://github.com/CathyKMeow/rosetta-linux-asahi.
 
 ## Patching
 We use radare2 on the `rosetta` binary. Inside `entry0`, only one function is called. Seek to that function `0x80000002e984`, and locate the string `"Rosetta is only intended to run on..."`.
